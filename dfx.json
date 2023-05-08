@@ -1,19 +1,19 @@
 {
   "canisters": {
-    "builder_backend": {
-      "main": "src/builder_backend/IndexCanister.mo",
+    "storage": {
+      "main": "src/storage/IndexCanister.mo",
       "type": "motoko"
     },
-    "salaries_science_frontend": {
+    "salaries_frontend": {
       "dependencies": [
-        "builder_backend"
+        "storage"
       ],
       "frontend": {
-        "entrypoint": "src/salaries_science_frontend/src/index.html"
+        "entrypoint": "src/salaries_frontend/src/index.html"
       },
       "source": [
-        "src/salaries_science_frontend/assets",
-        "dist/salaries_science_frontend/"
+        "src/salaries_frontend/assets",
+        "dist/salaries_frontend/"
       ],
       "type": "assets"
     }
