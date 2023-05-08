@@ -1,4 +1,4 @@
-import { zon_backend } from "../../declarations/zon_backend";
+import { salaries_science_backend } from "../../declarations/salaries_science_backend";
 
 document.querySelector("form").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -9,7 +9,7 @@ document.querySelector("form").addEventListener("submit", async (e) => {
   button.setAttribute("disabled", true);
 
   // Interact with foo actor, calling the greet method
-  const greeting = await zon_backend.greet(name);
+  const greeting = await salaries_science_backend.greet(name);
 
   button.removeAttribute("disabled");
 
