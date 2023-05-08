@@ -6,7 +6,7 @@ import CA "mo:candb/CanisterActions";
 import Utils "mo:candb/Utils";
 import CanisterMap "mo:candb/CanisterMap";
 import Buffer "mo:stable-buffer/StableBuffer";
-import ServiceActor "ServiceActor";
+import DBPartition "DBPartition";
 import Principal "mo:base/Principal";
 
 shared ({caller = owner}) actor class IndexCanister() = this {
@@ -50,7 +50,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     // Note that canister creation costs 100 billion cycles, meaning there are 200 billion
     // left over for the new canister when it is created
     Cycles.add(300_000_000_000);
-    let newHelloServiceCanister = await ServiceActor.ServiceActor({
+    let newHelloServiceCanister = await DBPartition.DBPartition({
       primaryKey = pk;
       scalingOptions = {
         autoScalingHook = autoScaleCanister;
