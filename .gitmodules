@@ -1,0 +1,3 @@
+[submodule "hello-candb"]
+	path = hello-candb
+	url = git@github.com:canscale/hello-candb.git
