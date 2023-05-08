@@ -37,20 +37,21 @@ shared ({caller = owner}) actor class IndexCanister() = this {
 
   public shared({caller = caller}) func autoScaleCanister(pk: Text): async Text {
     if (Utils.callingCanisterOwnsPK(caller, pkToCanisterMap, pk)) {
-      await createBuilderStorageCanister(pk, ?[owner, Principal.fromActor(this)]);
+      await createSalariesStorageCanister(pk, ?[owner, Principal.fromActor(this)]);
     } else {
       Debug.trap("error, called by non-controller=" # debug_show(caller));
     };
   };
 
+  // FIXME: We need big single canister for storing dependencies.
   // Spins up a new HelloService canister with the provided pk and controllers
-  func createBuilderStorageCanister(pk: Text, controllers: ?[Principal]): async Text {
-    Debug.print("creating new hello service canister with pk=" # pk);
-    // Pre-load 300 billion cycles for the creation of a new Hello Service canister
+  func createSalariesStorageCanister(pk: Text, controllers: ?[Principal]): async Text {
+    Debug.print("creating new storage canister with pk=" # pk);
+    // Pre-load 300 billion cycles for the creation of a new storage canister
     // Note that canister creation costs 100 billion cycles, meaning there are 200 billion
     // left over for the new canister when it is created
-    Cycles.add(300_000_000_000);
-    let newHelloServiceCanister = await DBPartition.DBPartition({
+    Cycles.add(300_000_000_000); // TODO: Choose the number.
+    let newStorageCanister = await DBPartition.DBPartition({
       primaryKey = pk;
       scalingOptions = {
         autoScalingHook = autoScaleCanister;
@@ -58,9 +59,9 @@ shared ({caller = owner}) actor class IndexCanister() = this {
       };
       owners = controllers;
     });
-    let newHelloServiceCanisterPrincipal = Principal.fromActor(newHelloServiceCanister);
+    let newStorageCanisterPrincipal = Principal.fromActor(newStorageCanister);
     await CA.updateCanisterSettings({
-      canisterId = newHelloServiceCanisterPrincipal;
+      canisterId = newStorageCanisterPrincipal;
       settings = {
         controllers = controllers;
         compute_allocation = ?0;
@@ -69,11 +70,11 @@ shared ({caller = owner}) actor class IndexCanister() = this {
       }
     });
 
-    let newHelloServiceCanisterId = Principal.toText(newHelloServiceCanisterPrincipal);
+    let newStorageCanisterId = Principal.toText(newStorageCanisterPrincipal);
     // After creating the new Hello Service canister, add it to the pkToCanisterMap
-    pkToCanisterMap := CanisterMap.add(pkToCanisterMap, pk, newHelloServiceCanisterId);
+    pkToCanisterMap := CanisterMap.add(pkToCanisterMap, pk, newStorageCanisterId);
 
-    Debug.print("new hello service canisterId=" # newHelloServiceCanisterId);
-    newHelloServiceCanisterId;
+    Debug.print("new storage canisterId=" # newStorageCanisterId);
+    newStorageCanisterId;
   };
 }
