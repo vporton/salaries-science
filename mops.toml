@@ -1,2 +1,4 @@
 [dependencies]
 base = "0.8.7"
+candb = 
+# dependencies = [ "base", "btree", "stable-rbtree", "stable-buffer", "candb" ]
