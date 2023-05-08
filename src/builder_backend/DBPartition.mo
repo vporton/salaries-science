@@ -11,7 +11,7 @@ shared ({ caller = owner }) actor class DBPartition({
 }) {
   /// @required (may wrap, but must be present in some form in the canister)
   stable let db = CanDB.init({
-    pk = "builder";
+    pk = primaryKey;
     scalingOptions = scalingOptions;
     btreeOrder = null;
   });
