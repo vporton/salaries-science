@@ -1,12 +1,12 @@
 {
   "canisters": {
-    "salaries_science_backend": {
-      "main": "src/salaries_science_backend/main.mo",
+    "builder_backend": {
+      "main": "src/builder_backend/IndexCanister.mo",
       "type": "motoko"
     },
     "salaries_science_frontend": {
       "dependencies": [
-        "salaries_science_backend"
+        "builder_backend"
       ],
       "frontend": {
         "entrypoint": "src/salaries_science_frontend/src/index.html"
@@ -21,7 +21,7 @@
   "defaults": {
     "build": {
       "args": "",
-      "packtool": ""
+      "packtool": "vessel sources"
     }
   },
   "output_env_file": ".env",

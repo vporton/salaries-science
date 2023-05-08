@@ -11,6 +11,7 @@
 # dfx temporary files
 .dfx/
 .mops/
+.vessel/
 
 # generated files
 src/declarations/
