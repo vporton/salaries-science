@@ -1,7 +1,7 @@
 import CA "mo:candb/CanisterActions";
 import CanDB "mo:candb/CanDB";
 
-shared ({ caller = owner }) actor class {{actor_class_name}}({
+shared ({ caller = owner }) actor class ServiceActor({
   // the primary key of this canister
   primaryKey: Text;
   // the scaling options that determine when to auto-scale out this canister storage partition
@@ -11,8 +11,9 @@ shared ({ caller = owner }) actor class {{actor_class_name}}({
 }) {
   /// @required (may wrap, but must be present in some form in the canister)
   stable let db = CanDB.init({
-    pk = primaryKey;
+    pk = "builder";
     scalingOptions = scalingOptions;
+    btreeOrder = null;
   });
 
   /// @recommended (not required) public API
