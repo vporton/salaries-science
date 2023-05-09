@@ -11,5 +11,3 @@ See also [a detailed description of how the project will be implemented in a dec
 Personal story behind the project:
 
 In 2019, I discovered ordered semigroup actions that could have been a groundbreaking discovery for world science, but due to a mistake in publication, it was not recognized as such. I became determined to rectify this situation and ensure that such mishaps do not hinder the progress of science in the future.
-
-What's special about _ordered semigroup actions_? It is a discovery that almost all the science depends on, but failed publication hindered progress of science instead of advancing it.
