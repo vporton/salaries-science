@@ -4,7 +4,7 @@ To **support basic science** I aim to create **grants similar to GitCoin grants*
 
 To achieve this vision, I plan to use the revolutionary DFINITY Internet Computer to run Salaries Science grants. This will ensure that every dollar donated goes directly to funding important scientific research and supporting the **underfinanced projects** that often go unnoticed.
 
-Please consider making a donation today to help **unblock science* and **support crucial scientific research** that can change the world for the better. Together, we can ensure that science is never hindered by unfortunate incidents and that every project has the support and funding it needs to succeed.
+Please consider making a donation today to help **unblock science** and **support crucial scientific research** that can change the world for the better. Together, we can ensure that science is never hindered by unfortunate incidents and that every project has the support and funding it needs to succeed.
 
 See also [a detailed description of how the project will be implemented in a decentralized way](https://github.com/vporton/salaries-science/blob/main/financing-science-algorithm.odt?raw=true).
 
