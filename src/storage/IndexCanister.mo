@@ -2,6 +2,7 @@ import Cycles "mo:base/ExperimentalCycles";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 import Text "mo:base/Text";
+import TrieSet "mo:base/TrieSet";
 import CA "mo:candb/CanisterActions";
 import Utils "mo:candb/Utils";
 import CanisterMap "mo:candb/CanisterMap";
@@ -9,7 +10,17 @@ import Buffer "mo:stable-buffer/StableBuffer";
 import DBPartition "DBPartition";
 import Principal "mo:base/Principal";
 
-shared ({caller = owner}) actor class IndexCanister() = this {
+shared actor class IndexCanister(owner: Principal) = this {
+  stable var allowedCallers: TrieSet.Set<Principal> = TrieSet.empty<Principal>();
+
+  public shared({caller = caller}) func addAllowedCaller(allowed: Principal) {
+    if (Principal.equal(owner, caller)) {
+      allowedCallers.put(allowed);
+    } else {
+      Debug.trap("only owner can add allowed callers")
+    };
+  };
+
   /// @required stable variable (Do not delete or change)
   ///
   /// Holds the CanisterMap of PK -> CanisterIdList
@@ -40,6 +51,19 @@ shared ({caller = owner}) actor class IndexCanister() = this {
       await createSalariesStorageCanister(pk, ?[owner, Principal.fromActor(this)]);
     } else {
       Debug.trap("error, called by non-controller=" # debug_show(caller));
+    };
+  };
+
+  // FIXME
+  public shared({caller = creator}) func createHelloServiceCanisterByGroup(group: Text): async ?Text {
+    let pk = "group#" # group;
+    let canisterIds = getCanisterIdsIfExists(pk);
+    if (canisterIds == []) {
+      ?(await createSalariesStorageCanister(pk, ?[owner, Principal.fromActor(this)]));
+    // the partition already exists, so don't create a new canister
+    } else {
+      Debug.print(pk # " already exists");
+      null 
     };
   };
 
