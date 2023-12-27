@@ -90,9 +90,9 @@ I am applying for this grant, also because I also want to receive a substantial 
 
 ## Deliverables :nut_and_bolt:
 
-- **Total Estimated Duration:** Duration of the whole project
-- **Full-time equivalent (FTE):** Amount of time (in days) required for a single person to complete this project ([see](https://en.wikipedia.org/wiki/Full-time_equivalent))
-- **Total Costs:** Amount of Payment in USD for the whole project.
+- **Total Estimated Duration:** 420 days
+- **Full-time equivalent (FTE):** 245
+- **Total Costs:** 47000 USD
 
 ### Milestone 1
 
