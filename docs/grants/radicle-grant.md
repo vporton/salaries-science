@@ -65,6 +65,8 @@ I have an extensive experience with DFINITY Internet Computer programming:
 I created the MVP (and advanced the work further) of Zon, an elaborate social network on the same platform:
 https://docs.zoncirlce.com
 
+I also have extensive exprience with TypeScript, the language that I am going to use.
+
 I also created XML Boiler: https://github.com/vporton/xml-boiler - the most advanced software for XML processing.
 
 I developed math related to OSA (more than 500 pages).
