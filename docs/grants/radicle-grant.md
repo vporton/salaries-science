@@ -90,8 +90,8 @@ I am applying for this grant, also because I also want to receive a substantial 
 
 ## Deliverables :nut_and_bolt:
 
-- **Total Estimated Duration:** 420 days
-- **Full-time equivalent (FTE):** 245
+- **Total Estimated Duration:** 410 days
+- **Full-time equivalent (FTE):** 242
 - **Total Costs:** 47000 USD
 
 ### Milestone 1
@@ -106,8 +106,8 @@ I am applying for this grant, also because I also want to receive a substantial 
 
 ### Milestone 2
 
-- **Estimated Duration:** 20
-- **FTE:** 10
+- **Estimated Duration:** 10
+- **FTE:** 7
 - **Costs:** 3000 USD
 
 | Number | Deliverable              | Specification                                                                       |
