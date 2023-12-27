@@ -125,9 +125,7 @@ Please add additional milestones in the same way:
 
 | Number | Deliverable                   | Specification                                                                       |
 | ------ | ----------------------------- | ----------------------------------------------------------------------------------- |
-| 1.     | general dependencies API      | API for storing on-chain dependencies                                               |
-| 2.     | Semantic Scholar dependencies | API for reading and storing on-chain Semantic Scholar dependencies                  |
-| 3.     | `crates.io` dependencies      | API for reading and storing on-chain crates.io dependencies                         |
+| 1.     | general dependencies API      | public API for storing on-chain dependencies                                        |
 
 ### Milestone 4
 
@@ -222,6 +220,18 @@ Please add additional milestones in the same way:
 | Number | Deliverable                   | Specification                                                                       |
 | ------ | ----------------------------- | ----------------------------------------------------------------------------------- |
 | 1.     | Rewarding servers             | Calculate and pay to server accounts                                                |
+
+### Milestone 13
+
+- **Estimated Duration:** 50
+- **FTE:** 30
+- **Costs:** 6000 USD
+
+| Number | Deliverable                     | Specification                                    |
+| ------ | ------------------------------- | ------------------------------------------------ |
+| 1.     | Server reference implementation | Calculate and pay to server accounts             |
+|        |                                 | - Semantic Scholar dependencies                  |
+|        |                                 | - `crates.io`` dependencies                      |
 
 ## Future Plans
 
