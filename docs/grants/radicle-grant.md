@@ -37,9 +37,10 @@ So, this project is intended for:
 through allocation of a part of donations to dependencies)
 - unstuck science by paid scientific marketing instead of traditional peer review
 
-Imprortance to unstuck science from mis-publications happened in the centralized world is immense.
+Importance to unstuck science from mis-publications happened in the centralized world is immense.
 Even one mis-published scientific project (such as OSA) may push down the entire science and therefore
-world economy.
+world economy. It is also important to establish an effective way to reward unknown to the world software
+components authors.
 
 ## Team :busts_in_silhouette:
 
