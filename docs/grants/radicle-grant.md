@@ -245,6 +245,6 @@ We will need further grants for improving design, SEO, and other marketing.
 **How did you hear about the Grants Program?** personal recommendation at Discord
 
 Work I have already done:
-- created the [algorithm](https://github.com/vporton/salaries-science/blob/main/financing-science-algorithm.odt?raw=true) (in English).
+- written the [algorithm](https://github.com/vporton/salaries-science/blob/main/financing-science-algorithm.odt?raw=true) (in English).
 I also started to write Motoko code, but it is very preliminary. (I am also going to replace Motoko by TypeScript.)
 - created [NacDB](https://github.com/vporton/NacDB), a database useful for this project.
