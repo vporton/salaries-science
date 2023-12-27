@@ -244,8 +244,6 @@ We will need further grants for improving design, SEO, and other marketing.
 
 **How did you hear about the Grants Program?** personal recommendation at Discord
 
-Here you can also add any additional information that you think is relevant to this application but isn't part of it already, such as:
-
 Work I have already done:
 - created the [algorithm](https://github.com/vporton/salaries-science/blob/main/financing-science-algorithm.odt?raw=true) (in English).
 I also started to write Motoko code, but it is very preliminary. (I am also going to replace Motoko by TypeScript.)
