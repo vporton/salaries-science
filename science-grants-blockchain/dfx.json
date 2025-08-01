@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "canisters": {
+    "grants_system": {
+      "type": "motoko",
+      "main": "src/grants_system/main.mo"
+    },
+    "dependency_graph": {
+      "type": "motoko",
+      "main": "src/dependency_graph/main.mo"
+    },
+    "consensus": {
+      "type": "motoko",
+      "main": "src/consensus/main.mo"
+    },
+    "frontend": {
+      "type": "assets",
+      "source": ["dist/"],
+      "dependencies": ["grants_system", "dependency_graph", "consensus"]
+    }
+  },
+  "defaults": {
+    "build": {
+      "packtool": ""
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
+    }
+  }
+}
