@@ -1,9 +1,6 @@
 {
   "canisters": {
     "builder": {
-      "dependencies": [
-        "IndexCanister"
-      ],
       "main": "src/builder/main.mo",
       "type": "motoko"
     },
@@ -21,7 +18,7 @@
   "defaults": {
     "build": {
       "args": "",
-      "packtool": "vessel sources"
+      "packtool": "mops sources"
     }
   },
   "output_env_file": ".env",
