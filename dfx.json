@@ -1,9 +1,5 @@
 {
   "canisters": {
-    "builder": {
-      "main": "src/builder/main.mo",
-      "type": "motoko"
-    },
     "salaries_frontend": {
       "frontend": {
         "entrypoint": "src/salaries_frontend/src/index.html"
