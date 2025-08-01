@@ -1,9 +1,5 @@
 {
   "canisters": {
-    "IndexCanister": {
-      "main": "src/storage/IndexCanister.mo",
-      "type": "motoko"
-    },
     "builder": {
       "dependencies": [
         "IndexCanister"
