@@ -19,11 +19,11 @@ export default defineConfig({
   plugins: [
     react(),
     // nodePolyfills(),
-    environment("all", { prefix: "CANISTER_", defineOn: 'process.env' }),
-    environment("all", { prefix: "DFX_", defineOn: 'process.env' }),
-    environment("all", { prefix: "II_", defineOn: 'process.env' }),
+    environment("all", { prefix: "CANISTER_", defineOn: 'import.meta.env' }),
+    environment("all", { prefix: "DFX_", defineOn: 'import.meta.env' }),
+    environment("all", { prefix: "II_", defineOn: 'import.meta.env' }),
   ],
   define: {
-    'process.env.II_URL': JSON.stringify(process.env.II_URL || 'http://localhost:4943'),
+    'import.meta.env.II_URL': JSON.stringify(process.env.II_URL || 'http://localhost:8080'),
   },
 })
