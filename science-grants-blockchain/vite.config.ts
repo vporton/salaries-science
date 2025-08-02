@@ -23,7 +23,4 @@ export default defineConfig({
     environment("all", { prefix: "DFX_", defineOn: 'import.meta.env' }),
     environment("all", { prefix: "II_", defineOn: 'import.meta.env' }),
   ],
-  define: {
-    'import.meta.env.II_URL': JSON.stringify(process.env.II_URL || 'http://localhost:8080'),
-  },
 })
