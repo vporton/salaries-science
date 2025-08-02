@@ -1,6 +1,6 @@
 # Radworks Grant Application
 
-- **Project Name:** Salaries Science
+- **Project Name:** Grants Science
 - **Team Name:** World Science DAO
 - **Payment Address:** 0x36A0356d43EE4168ED24EFA1CAe3198708667ac0
 - **[Category](https://github.com/radicle-dev/radicle-grants#grant-categories):** Radicle Adoption
