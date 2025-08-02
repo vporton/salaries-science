@@ -52,7 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     await authClient.login({
       identityProvider: isLocalhost
-        ? `http://localhost:8000?canisterId=${import.meta.env.VITE_INTERNET_IDENTITY_CANISTER_ID || 'rdmx6-jaaaa-aaaaa-aaadq-cai'}`
+        ? `http://localhost:8080?canisterId=${import.meta.env.CANISTER_ID_INTERNET_IDENTITY || 'rdmx6-jaaaa-aaaaa-aaadq-cai'}`
         : 'https://identity.ic0.app',
       onSuccess: () => {
         setIsAuthenticated(true)

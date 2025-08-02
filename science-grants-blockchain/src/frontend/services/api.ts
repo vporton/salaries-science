@@ -24,7 +24,7 @@ export const initializeActors = async (identity?: any) => {
   agent = new HttpAgent({
     host: import.meta.env.MODE === 'production' 
       ? 'https://ic0.app' 
-      : 'http://localhost:8000',
+      : 'http://localhost:8080',
     identity
   })
 

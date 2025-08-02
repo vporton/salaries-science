@@ -5,7 +5,7 @@ deploy: deploy-us
 
 # .PHONY: deploy-candb
 # deploy-candb:
-# 	cd hello-candb && dfx deploy index --network http://localhost:8000
+# 	cd hello-candb && dfx deploy index --network http://localhost:8080
 
 .PHONY: deploy-us
 deploy-us:
