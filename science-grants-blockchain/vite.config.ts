@@ -21,6 +21,9 @@ export default defineConfig({
     // nodePolyfills(),
     environment("all", { prefix: "CANISTER_", defineOn: 'process.env' }),
     environment("all", { prefix: "DFX_", defineOn: 'process.env' }),
-    environment(["II_URL"]),
+    environment("all", { prefix: "II_", defineOn: 'process.env' }),
   ],
+  define: {
+    'process.env.II_URL': JSON.stringify(process.env.II_URL || 'http://localhost:4943'),
+  },
 })
