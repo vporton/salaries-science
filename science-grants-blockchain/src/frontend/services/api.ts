@@ -22,14 +22,14 @@ let dependencyActor: DependencyGraph | null = null
 export const initializeActors = async (identity?: any) => {
   // Initialize agent
   agent = new HttpAgent({
-    host: process.env.NODE_ENV === 'production' 
+    host: import.meta.env.MODE === 'production' 
       ? 'https://ic0.app' 
       : 'http://localhost:8000',
     identity
   })
 
   // In development, fetch root key for local replica
-  if (process.env.NODE_ENV !== 'production') {
+  if (import.meta.env.MODE !== 'production') {
     await agent.fetchRootKey()
   }
 
