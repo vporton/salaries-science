@@ -1,5 +1,15 @@
 {
   "canisters": {
+    "internet_identity": {
+      "type": "custom",
+      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.wasm",
+      "remote": {
+        "id": {
+          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+        }
+      }
+    },
     "salaries_frontend": {
       "frontend": {
         "entrypoint": "src/salaries_frontend/src/index.html"
@@ -8,7 +18,8 @@
         "src/salaries_frontend/assets",
         "dist/salaries_frontend/"
       ],
-      "type": "assets"
+      "type": "assets",
+      "dependencies": ["internet_identity"]
     }
   },
   "defaults": {
