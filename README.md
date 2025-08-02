@@ -1,4 +1,4 @@
-# salaries-science
+# grants-science
 
 A decentralized science funding platform built on the Internet Computer.
 
@@ -22,7 +22,7 @@ A decentralized science funding platform built on the Internet Computer.
 1. **Clone the repository:**
    ```bash
    git clone <repository-url>
-   cd salaries-science
+   cd grants-science
    ```
 
 2. **Deploy Internet Identity (required for authentication):**

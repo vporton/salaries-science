@@ -126,8 +126,8 @@ Projects should add a `accounts.json` file to their GitHub repository:
 ```
 
 Place this file at:
-- `https://github.com/USER/USER/.salaries-science/accounts.json` (recommended)
-- `https://github.com/USER/PROJECT/.salaries-science/accounts.json` (per-project)
+- `https://github.com/USER/USER/.grants-science/accounts.json` (recommended)
+- `https://github.com/USER/PROJECT/.grants-science/accounts.json` (per-project)
 
 ### Making a Donation
 

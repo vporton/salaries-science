@@ -10,7 +10,7 @@ Also it is planned to make a browser extension to donate directly at sites prese
 
 Please consider making a donation today to help **unblock science** and **support crucial scientific research** that can change the world for the better. Together, we can ensure that science is never hindered by unfortunate incidents and that every project has the support and funding it needs to succeed.
 
-See also [a detailed description of how the project will be implemented in a decentralized way](https://github.com/vporton/salaries-science/blob/main/financing-science-algorithm.odt?raw=true).
+See also [a detailed description of how the project will be implemented in a decentralized way](https://github.com/vporton/grants-science/blob/main/financing-science-algorithm.odt?raw=true).
 
 Personal story behind the project:
 

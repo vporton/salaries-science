@@ -83,7 +83,7 @@ I developed math related to OSA (more than 500 pages).
 
 ## Project Description :page_facing_up:
 
-[The detailed description of the algorithm.](https://github.com/vporton/salaries-science/blob/main/financing-science-algorithm.odt?raw=true)
+[The detailed description of the algorithm.](https://github.com/vporton/grants-science/blob/main/financing-science-algorithm.odt?raw=true)
 
 I am applying for this grant, because I want to save science from mis-publication (including but not limited to
 proper marketing of OSA).
@@ -247,6 +247,6 @@ We will need further grants for improving design, SEO, and other marketing.
 **How did you hear about the Grants Program?** personal recommendation at Discord
 
 Work I have already done:
-- written the [algorithm](https://github.com/vporton/salaries-science/blob/main/financing-science-algorithm.odt?raw=true) (in English).
+- written the [algorithm](https://github.com/vporton/grants-science/blob/main/financing-science-algorithm.odt?raw=true) (in English).
 I also started to write Motoko code, but it is very preliminary. (I am also going to replace Motoko by TypeScript.)
 - created [NacDB](https://github.com/vporton/NacDB), a database useful for this project.
