@@ -4,7 +4,7 @@ To **support basic science** I aim to create **grants similar to GitCoin grants*
 
 This software also contributes to **peer review**: If people donate money to a project (directly or as a dependency of another project), it is likely that the project was positively **reviewed by them**. This is in some aspects superior to traditional peer review: review is done **after publication** and is **free from bias** appearing when the review is done by just one person or a small group.
 
-To achieve this vision, it is planned to use the revolutionary DFINITY Internet Computer to run Salaries Science grants. This will ensure that every dollar donated goes directly to funding important scientific research and supporting the **underfinanced projects** that often go unnoticed.
+To achieve this vision, it is planned to use the revolutionary DFINITY Internet Computer to run Grants Science grants. This will ensure that every dollar donated goes directly to funding important scientific research and supporting the **underfinanced projects** that often go unnoticed.
 
 Also it is planned to make a browser extension to donate directly at sites presenting projects (such as github.com, crates.io, arxiv.org).
 
