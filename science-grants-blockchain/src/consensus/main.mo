@@ -9,6 +9,7 @@ import Int "mo:base/Int";
 import Float "mo:base/Float";
 import Text "mo:base/Text";
 import Iter "mo:base/Iter";
+import Nat32 "mo:base/Nat32";
 
 actor Consensus {
     // Types
