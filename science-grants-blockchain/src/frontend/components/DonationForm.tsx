@@ -8,7 +8,7 @@ interface DonationFormProps {
 }
 
 export const DonationForm: React.FC<DonationFormProps> = ({ projectId, onSuccess }) => {
-  const { isAuthenticated, principal } = useAuth()
+  const { isAuthenticated } = useAuth()
   const [amount, setAmount] = useState('')
   const [dependencyPercentage, setDependencyPercentage] = useState(50)
   const [affiliatePercentage, setAffiliatePercentage] = useState(60)

@@ -1,5 +1,4 @@
-import { Actor, HttpAgent } from '@dfinity/agent'
-import { Principal } from '@dfinity/principal'
+import { HttpAgent } from '@dfinity/agent'
 
 // This would be generated from your canister's candid file
 // For now, we'll define interfaces manually
@@ -52,7 +51,7 @@ export const getProjects = async () => {
   return []
 }
 
-export const donate = async (params: {
+export const donate = async (_params: {
   projectId: string
   amount: number
   dependencyPercentage: number
@@ -64,17 +63,17 @@ export const donate = async (params: {
   }
 
   // Convert parameters to the format expected by the canister
-  const donationSpec = {
-    projectId: params.projectId,
-    amount: BigInt(Math.floor(params.amount * 1e8)), // Convert to e8s
-    token: { ICP: null },
-    dependencyPercentage: BigInt(params.dependencyPercentage),
-    affiliatePercentage: BigInt(params.affiliatePercentage),
-    affiliate: params.affiliateAddress 
-      ? [Principal.fromText(params.affiliateAddress)]
-      : [],
-    timestamp: BigInt(Date.now() * 1000000) // nanoseconds
-  }
+  // const donationSpec = {
+  //   projectId: params.projectId,
+  //   amount: BigInt(Math.floor(params.amount * 1e8)), // Convert to e8s
+  //   token: { ICP: null },
+  //   dependencyPercentage: BigInt(params.dependencyPercentage),
+  //   affiliatePercentage: BigInt(params.affiliatePercentage),
+  //   affiliate: params.affiliateAddress 
+  //     ? [Principal.fromText(params.affiliateAddress)]
+  //     : [],
+  //   timestamp: BigInt(Date.now() * 1000000) // nanoseconds
+  // }
 
   // return await grantsActor.donate(donationSpec)
   
@@ -82,7 +81,7 @@ export const donate = async (params: {
   return new Promise(resolve => setTimeout(resolve, 1000))
 }
 
-export const getProjectDependencies = async (version: string) => {
+export const getProjectDependencies = async (_version: string) => {
   if (!dependencyActor) {
     throw new Error('Dependency actor not initialized')
   }
@@ -93,7 +92,7 @@ export const getProjectDependencies = async (version: string) => {
   return []
 }
 
-export const getProjectStats = async (projectId: string) => {
+export const getProjectStats = async (_projectId: string) => {
   if (!grantsActor) {
     throw new Error('Grants actor not initialized')
   }

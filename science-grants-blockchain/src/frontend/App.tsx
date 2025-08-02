@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
 import { ProjectList } from './components/ProjectList'
@@ -6,7 +6,6 @@ import { DonationForm } from './components/DonationForm'
 import { AffiliatePanel } from './components/AffiliatePanel'
 import { ServerDashboard } from './components/ServerDashboard'
 import { AuthProvider } from './contexts/AuthContext'
-import { Principal } from '@dfinity/principal'
 
 type View = 'home' | 'projects' | 'donate' | 'affiliate' | 'server'
 

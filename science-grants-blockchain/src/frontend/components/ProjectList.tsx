@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { getProjects } from '../services/api'
 
 interface Project {
   id: string

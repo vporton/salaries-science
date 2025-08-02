@@ -20,7 +20,7 @@ interface Challenge {
 }
 
 export const ServerDashboard: React.FC = () => {
-  const { isAuthenticated, principal } = useAuth()
+  const { isAuthenticated } = useAuth()
   const [stats, setStats] = useState<ServerStats>({
     status: 'inactive',
     stake: 0,
