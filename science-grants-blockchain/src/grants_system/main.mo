@@ -240,18 +240,17 @@ actor GrantsSystem {
     // Calculate distribution after round ends
     public shared func calculateDistributions() : async Result.Result<Text, Text> {
         switch (currentRound) {
-            case null { #err("No active round") };
             case (?round) {
                 if (Time.now() < round.endTime) {
                     return #err("Round has not ended yet");
                 };
                 
                 // Calculate distributions for each project
-                for ((projectId, _) in donations.entries()) {
+                label l for ((projectId, _) in donations.entries()) {
                     let matching = await calculateMatching(projectId);
                     let stats = switch (projectStats.get(projectId)) {
-                        case null { continue };
                         case (?s) { s };
+                        case null { continue l };
                     };
                     
                     // Calculate after tax and affiliate fees
@@ -260,8 +259,8 @@ actor GrantsSystem {
                     
                     // Store withdrawal allowance
                     let current = switch (withdrawals.get(projectId)) {
-                        case null { [] };
                         case (?w) { w };
+                        case null { [] };
                     };
                     
                     withdrawals.put(projectId, Array.append(current, [(#ICP, afterTax)]));
@@ -269,6 +268,7 @@ actor GrantsSystem {
                 
                 #ok("Distributions calculated")
             };
+            case null { #err("No active round") };
         }
     };
     
