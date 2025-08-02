@@ -1,10 +1,7 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
-interface HeroProps {
-  onGetStarted: () => void
-}
-
-export const Hero: React.FC<HeroProps> = ({ onGetStarted }) => {
+export const Hero: React.FC = () => {
   return (
     <div className="bg-gradient-to-br from-primary-600 to-secondary-600 text-white">
       <div className="container mx-auto px-4 py-24">
@@ -17,13 +14,13 @@ export const Hero: React.FC<HeroProps> = ({ onGetStarted }) => {
             open-source software development through blockchain technology
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button 
-              onClick={onGetStarted}
+            <Link 
+              to="/projects"
               className="bg-white text-primary-700 px-8 py-3 rounded-lg font-semibold
                        hover:bg-gray-100 transition-colors duration-200 shadow-lg"
             >
               Explore Projects
-            </button>
+            </Link>
             <a 
               href="https://github.com/vporton/science-grants-blockchain"
               target="_blank"
