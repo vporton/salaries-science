@@ -45,10 +45,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async () => {
     if (!authClient) return
 
+    // Check if we're running on localhost
+    const isLocalhost = window.location.hostname === 'localhost' || 
+                       window.location.hostname === '127.0.0.1' ||
+                       window.location.hostname.includes('localhost');
+
     await authClient.login({
-      identityProvider: process.env.NODE_ENV === 'production' 
-        ? 'https://identity.ic0.app'
-        : `http://localhost:8000?canisterId=${process.env.INTERNET_IDENTITY_CANISTER_ID}`,
+      identityProvider: isLocalhost
+        ? `http://localhost:8000?canisterId=${process.env.INTERNET_IDENTITY_CANISTER_ID}`
+        : 'https://identity.ic0.app',
       onSuccess: () => {
         setIsAuthenticated(true)
         const identity = authClient.getIdentity()
