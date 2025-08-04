@@ -163,44 +163,31 @@ export const ServerDashboard: React.FC = () => {
       <div className="card">
         <h2 className="text-xl font-semibold mb-4">Active Challenges</h2>
         {challenges.length > 0 ? (
-          <div className="space-y-3">
-            {challenges.map(challenge => (
-              <div key={challenge.id} className="border rounded-lg p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <span className={`inline-block px-2 py-1 rounded text-xs font-medium mr-2
-                      ${challenge.type === 'incoming' ? 'bg-yellow-100 text-yellow-800' : 
-                        'bg-blue-100 text-blue-800'}`}>
-                      {challenge.type === 'incoming' ? 'Incoming' : 'Outgoing'}
-                    </span>
-                    <span className="text-sm text-gray-600">
-                      vs {challenge.opponent}
-                    </span>
-                  </div>
-                  <span className={`text-xs px-2 py-1 rounded
-                    ${challenge.status === 'pending' ? 'bg-orange-100 text-orange-800' :
-                      'bg-gray-100 text-gray-800'}`}>
-                    {challenge.status}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600">
-                  Version: {challenge.parentVersion}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {challenge.timestamp.toLocaleString()}
-                </p>
-                {challenge.type === 'incoming' && challenge.status === 'pending' && (
-                  <div className="flex gap-2 mt-3">
-                    <button className="btn-primary text-sm py-1">
-                      Vote Support
-                    </button>
-                    <button className="btn-secondary text-sm py-1">
-                      Vote Against
-                    </button>
-                  </div>
-                )}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Active Challenges</p>
+                <p className="text-2xl font-bold text-primary-600">{challenges.length}</p>
               </div>
-            ))}
+              <div className="text-right">
+                <p className="text-sm text-gray-600">Incoming</p>
+                <p className="text-lg font-semibold text-yellow-600">
+                  {challenges.filter(c => c.type === 'incoming').length}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-600">Outgoing</p>
+                <p className="text-lg font-semibold text-blue-600">
+                  {challenges.filter(c => c.type === 'outgoing').length}
+                </p>
+              </div>
+            </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> Voting on challenges is handled automatically by the server software. 
+                No manual intervention is required.
+              </p>
+            </div>
           </div>
         ) : (
           <p className="text-gray-500 text-center py-4">No active challenges</p>
