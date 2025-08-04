@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { getProjects, getProjectStats } from '../services/api'
 
 interface Project {
   id: string
@@ -10,6 +12,13 @@ interface Project {
   donationAddress?: string
   dependencies: number
   github?: string
+  owner?: string
+  language?: string
+  stars?: number
+  forks?: number
+  topics?: string[]
+  createdAt?: string
+  updatedAt?: string
 }
 
 interface ProjectListProps {
@@ -29,45 +38,42 @@ export const ProjectList: React.FC<ProjectListProps> = ({ onSelectProject }) => 
   const loadProjects = async () => {
     try {
       setLoading(true)
-      // Mock data for now
-      const mockProjects: Project[] = [
-        {
-          id: 'ordered-semigroup-actions',
-          name: 'Ordered Semigroup Actions',
-          description: 'Fundamental research in algebraic topology that forms the basis for future mathematical discoveries',
-          category: 'science',
-          totalDonations: 50000,
-          matchingAmount: 25000,
-          donationAddress: '0x1234...',
-          dependencies: 0,
-          github: 'https://github.com/vporton/algebraic-theory'
-        },
-        {
-          id: 'left-pad',
-          name: 'left-pad',
-          description: 'Essential string manipulation library used by millions of projects',
-          category: 'software',
-          totalDonations: 10000,
-          matchingAmount: 5000,
-          donationAddress: '0x5678...',
-          dependencies: 0,
-          github: 'https://github.com/left-pad/left-pad'
-        },
-        {
-          id: 'quantum-computing-lib',
-          name: 'Quantum Computing Library',
-          description: 'Open-source quantum computing simulation and algorithm library',
-          category: 'software',
-          totalDonations: 75000,
-          matchingAmount: 35000,
-          donationAddress: '0x9abc...',
-          dependencies: 5,
-          github: 'https://github.com/example/quantum-lib'
-        }
-      ]
-      setProjects(mockProjects)
+      
+      // Fetch projects from the API
+      const apiProjects = await getProjects()
+      
+      // Transform API projects to match our interface and fetch stats for each
+      const transformedProjects: Project[] = await Promise.all(
+        (apiProjects || []).map(async (apiProject: any) => {
+          // Fetch project stats
+          const stats = await getProjectStats(apiProject.id)
+          
+          return {
+            id: apiProject.id,
+            name: apiProject.name,
+            description: apiProject.description,
+            category: apiProject.category === 'science' ? 'science' : 'software',
+            totalDonations: stats?.totalDonations || 0,
+            matchingAmount: stats?.matchingAmount || 0,
+            donationAddress: undefined, // Not available in current API
+            dependencies: 0, // Not available in current API
+            github: apiProject.githubUrl,
+            owner: apiProject.owner,
+            language: apiProject.language,
+            stars: apiProject.stars,
+            forks: apiProject.forks,
+            topics: apiProject.topics,
+            createdAt: apiProject.createdAt,
+            updatedAt: apiProject.updatedAt
+          }
+        })
+      )
+      
+      setProjects(transformedProjects)
     } catch (error) {
       console.error('Failed to load projects:', error)
+      // Fallback to empty array if API fails
+      setProjects([])
     } finally {
       setLoading(false)
     }
@@ -136,6 +142,30 @@ export const ProjectList: React.FC<ProjectListProps> = ({ onSelectProject }) => 
             <h3 className="text-xl font-semibold mb-2">{project.name}</h3>
             <p className="text-gray-600 mb-4 line-clamp-3">{project.description}</p>
             
+            {/* Additional project info */}
+            <div className="space-y-2 mb-4 text-sm text-gray-500">
+              {project.owner && (
+                <div className="flex items-center gap-1">
+                  <span>👤 {project.owner}</span>
+                </div>
+              )}
+              {project.language && (
+                <div className="flex items-center gap-1">
+                  <span>💻 {project.language}</span>
+                </div>
+              )}
+              {project.stars && (
+                <div className="flex items-center gap-1">
+                  <span>⭐ {project.stars.toLocaleString()} stars</span>
+                </div>
+              )}
+              {project.forks && (
+                <div className="flex items-center gap-1">
+                  <span>🍴 {project.forks.toLocaleString()} forks</span>
+                </div>
+              )}
+            </div>
+            
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Total Donations:</span>
@@ -177,7 +207,10 @@ export const ProjectList: React.FC<ProjectListProps> = ({ onSelectProject }) => 
 
       {filteredProjects.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500">No projects found matching your criteria</p>
+          <p className="text-gray-500 mb-4">No projects found matching your criteria</p>
+          <Link to="/submit" className="btn-primary">
+            Submit Your First Project
+          </Link>
         </div>
       )}
     </div>

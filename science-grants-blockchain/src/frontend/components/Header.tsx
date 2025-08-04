@@ -9,6 +9,7 @@ export const Header: React.FC = () => {
   const navItems = [
     { id: 'home', label: 'Home', icon: '🏠', path: '/' },
     { id: 'projects', label: 'Projects', icon: '📚', path: '/projects' },
+    { id: 'submit', label: 'Submit', icon: '➕', path: '/submit' },
     { id: 'donate', label: 'Donate', icon: '💝', path: '/donate' },
     { id: 'affiliate', label: 'Affiliate', icon: '🤝', path: '/affiliate' },
     { id: 'server', label: 'Server', icon: '🖥️', path: '/server' },

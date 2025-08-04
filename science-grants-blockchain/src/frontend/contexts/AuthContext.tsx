@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { AuthClient } from '@dfinity/auth-client'
 import { Principal } from '@dfinity/principal'
+import { initializeActors } from '../services/api'
 
 interface AuthContextType {
   isAuthenticated: boolean
@@ -39,6 +40,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isAuthenticated) {
       const identity = client.getIdentity()
       setPrincipal(identity.getPrincipal())
+      // Initialize actors when authenticated
+      await initializeActors(identity)
     }
   }
 
@@ -54,10 +57,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       identityProvider: isLocalhost
         ? `http://${import.meta.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:8080`
         : 'https://identity.ic0.app',
-      onSuccess: () => {
+      onSuccess: async () => {
         setIsAuthenticated(true)
         const identity = authClient.getIdentity()
         setPrincipal(identity.getPrincipal())
+        // Initialize actors after successful login
+        await initializeActors(identity)
       },
     })
   }

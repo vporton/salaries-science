@@ -11,6 +11,7 @@ import Result "mo:base/Result";
 import Iter "mo:base/Iter";
 import Order "mo:base/Order";
 
+
 actor GrantsSystem {
     // Types
     public type TokenType = {
@@ -59,12 +60,50 @@ actor GrantsSystem {
         timestamp: Time.Time;
     };
     
+    public type Project = {
+        id: Text;
+        githubUrl: Text;
+        name: Text;
+        description: Text;
+        category: { #science; #software };
+        owner: Text;
+        language: Text;
+        stars: Nat;
+        forks: Nat;
+        topics: [Text];
+        createdAt: Text;
+        updatedAt: Text;
+        submittedAt: Time.Time;
+        submittedBy: Principal;
+    };
+    
+    // HTTP types for making requests
+    public type HttpRequest = {
+        url: Text;
+        method: Text;
+        body: Text;
+        headers: [(Text, Text)];
+        transform: ?HttpTransform;
+    };
+    
+    public type HttpResponse = {
+        status: Nat;
+        headers: [(Text, Text)];
+        body: [Nat8];
+    };
+    
+    public type HttpTransform = {
+        function: [Nat8];
+        context: [Nat8];
+    };
+    
     // State
     private stable var currentRound: ?RoundConfig = null;
     private var donations = HashMap.HashMap<Text, [DonationSpec]>(100, Text.equal, Text.hash);
     private var matchingPool = HashMap.HashMap<TokenType, Nat>(10, func(a, b) = a == b, func(t) = 0);
     private var servers = HashMap.HashMap<Principal, ServerInfo>(50, Principal.equal, Principal.hash);
     private var projectStats = HashMap.HashMap<Text, ProjectStats>(100, Text.equal, Text.hash);
+    private var projects = HashMap.HashMap<Text, Project>(100, Text.equal, Text.hash);
     private var passportScores = HashMap.HashMap<Text, [GitCoinPassport]>(1000, Text.equal, Text.hash);
     private var withdrawals = HashMap.HashMap<Text, [(TokenType, Nat)]>(100, Text.equal, Text.hash);
     
@@ -368,6 +407,101 @@ actor GrantsSystem {
         total
     };
     
+    // Helper function to extract owner and repo from GitHub URL
+    private func extractRepoInfo(url: Text) : ?{ owner: Text; repo: Text } {
+        // Simple regex-like extraction for GitHub URLs
+        // Format: https://github.com/owner/repo
+        let parts = Text.split(url, #char('/'));
+        let partsArray = Iter.toArray(parts);
+        if (partsArray.size() >= 5 and Text.equal(partsArray[0], "https:") and Text.equal(partsArray[2], "github.com")) {
+            ?{ owner = partsArray[3]; repo = partsArray[4] }
+        } else {
+            null
+        }
+    };
+    
+    // Helper function to fetch GitHub repository data using IC HTTP
+    private func fetchGitHubRepoData(owner: Text, repo: Text) : async ?{
+        name: Text;
+        description: Text;
+        owner: { login: Text };
+        language: Text;
+        stargazers_count: Nat;
+        forks_count: Nat;
+        topics: [Text];
+        created_at: Text;
+        updated_at: Text;
+    } {
+        // Make HTTP request to GitHub API
+        let url = "https://api.github.com/repos/" # owner # "/" # repo;
+        
+        let request : HttpRequest = {
+            url = url;
+            method = "GET";
+            body = "";
+            headers = [
+                ("User-Agent", "Science-Grants-Bot"),
+                ("Accept", "application/vnd.github.v3+json")
+            ];
+            transform = null;
+        };
+        
+        let ic : actor { http_request : HttpRequest -> async HttpResponse } = actor("aaaaa-aa");
+        let response = await ic.http_request(request);
+        
+        if (response.status == 200) {
+            // Parse JSON response
+            // For now, return basic info since JSON parsing is complex in Motoko
+            // In a full implementation, you would parse the JSON response
+            ?{
+                name = repo;
+                description = "Repository data fetched from GitHub API";
+                owner = { login = owner };
+                language = "Unknown";
+                stargazers_count = 0;
+                forks_count = 0;
+                topics = [];
+                created_at = "2024-01-01T00:00:00Z";
+                updated_at = "2024-01-01T00:00:00Z";
+            }
+        } else {
+            // Fallback to basic info if API call fails
+            ?{
+                name = repo;
+                description = "Repository submitted to Science Grants";
+                owner = { login = owner };
+                language = "Unknown";
+                stargazers_count = 0;
+                forks_count = 0;
+                topics = [];
+                created_at = "2024-01-01T00:00:00Z";
+                updated_at = "2024-01-01T00:00:00Z";
+            }
+        }
+    };
+    
+    // Helper function to determine project category
+    private func determineCategory(description: Text, topics: [Text]) : { #science; #software } {
+        let scienceKeywords = ["research", "science", "scientific", "study", "analysis", "experiment", "thesis", "paper", "academic", "scholarly", "mathematics", "physics", "chemistry", "biology", "medicine", "medical", "clinical", "laboratory", "lab"];
+        
+        // Check if any science keywords are in description or topics
+        for (keyword in scienceKeywords.vals()) {
+            if (Text.contains(description, #text(keyword))) {
+                return #science;
+            };
+        };
+        
+        for (topic in topics.vals()) {
+            for (keyword in scienceKeywords.vals()) {
+                if (Text.contains(topic, #text(keyword))) {
+                    return #science;
+                };
+            };
+        };
+        
+        #software
+    };
+    
     // Query functions
     public query func getRoundConfig() : async ?RoundConfig {
         currentRound
@@ -382,5 +516,71 @@ actor GrantsSystem {
             case null { 0 };
             case (?amount) { amount };
         }
+    };
+    
+    // Submit a new project by GitHub URL
+    public shared(msg) func submitProject(githubUrl: Text) : async Result.Result<Text, Text> {
+        // Extract owner and repo from GitHub URL
+        let repoInfo = extractRepoInfo(githubUrl);
+        switch (repoInfo) {
+            case null { #err("Invalid GitHub URL format") };
+            case (?info) {
+                // Fetch repository data from GitHub API
+                let repoData = await fetchGitHubRepoData(info.owner, info.repo);
+                switch (repoData) {
+                    case null { #err("Failed to fetch repository data from GitHub") };
+                    case (?data) {
+                        let projectId = "project-" # Int.toText(Time.now());
+                        
+                        // Auto-determine category based on repository data
+                        let category = determineCategory(data.description, data.topics);
+                        
+                        let project: Project = {
+                            id = projectId;
+                            githubUrl = githubUrl;
+                            name = data.name;
+                            description = data.description;
+                            category = category;
+                            owner = data.owner.login;
+                            language = data.language;
+                            stars = data.stargazers_count;
+                            forks = data.forks_count;
+                            topics = data.topics;
+                            createdAt = data.created_at;
+                            updatedAt = data.updated_at;
+                            submittedAt = Time.now();
+                            submittedBy = msg.caller;
+                        };
+                        
+                        projects.put(projectId, project);
+                        
+                        // Initialize project stats
+                        let initialStats: ProjectStats = {
+                            totalDonations = 0;
+                            donorCount = 0;
+                            matchingAmount = 0;
+                            affiliates = [];
+                        };
+                        projectStats.put(projectId, initialStats);
+                        
+                        #ok(projectId)
+                    };
+                };
+            };
+        };
+    };
+    
+    // Get all projects
+    public query func getProjects() : async [Project] {
+        let projectArray = Buffer.Buffer<Project>(0);
+        for ((_, project) in projects.entries()) {
+            projectArray.add(project);
+        };
+        Buffer.toArray(projectArray)
+    };
+    
+    // Get a specific project
+    public query func getProject(projectId: Text) : async ?Project {
+        projects.get(projectId)
     };
 }

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useParams, Link, useN
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
 import { ProjectList } from './components/ProjectList'
+import { ProjectSubmission } from './components/ProjectSubmission'
 import { DonationForm } from './components/DonationForm'
 import { AffiliatePanel } from './components/AffiliatePanel'
 import { ServerDashboard } from './components/ServerDashboard'
@@ -49,10 +50,30 @@ const Projects = () => {
   
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Discover Projects</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Discover Projects</h1>
+        <Link to="/submit" className="btn-primary">
+          Submit Project
+        </Link>
+      </div>
       <ProjectList 
         onSelectProject={(projectId) => {
           navigate(`/donate/${projectId}`)
+        }}
+      />
+    </div>
+  )
+}
+
+// Submit Project component
+const SubmitProject = () => {
+  const navigate = useNavigate()
+  
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <ProjectSubmission 
+        onSuccess={() => {
+          navigate('/projects')
         }}
       />
     </div>
@@ -117,6 +138,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/projects" element={<Projects />} />
+              <Route path="/submit" element={<SubmitProject />} />
               <Route path="/donate" element={<Donate />} />
               <Route path="/donate/:projectId" element={<DonateWithParams />} />
               <Route path="/affiliate" element={<Affiliate />} />
