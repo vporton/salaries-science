@@ -1,17 +1,18 @@
-import Principal "mo:base/Principal";
-import HashMap "mo:base/HashMap";
-import Array "mo:base/Array";
-import Buffer "mo:base/Buffer";
-import Result "mo:base/Result";
-import Time "mo:base/Time";
-import Nat "mo:base/Nat";
-import Int "mo:base/Int";
-import Float "mo:base/Float";
-import Text "mo:base/Text";
-import Iter "mo:base/Iter";
-import Nat32 "mo:base/Nat32";
+import Principal "mo:core/Principal";
+import Map "mo:core/Map";
+import Array "mo:core/Array";
+import List "mo:core/List";
+import Result "mo:core/Result";
+import Time "mo:core/Time";
+import Nat "mo:core/Nat";
+import Int "mo:core/Int";
+import Float "mo:core/Float";
+import Text "mo:core/Text";
+import Iter "mo:core/Iter";
+import Nat32 "mo:core/Nat32";
+import Error "mo:core/Error";
 
-actor Consensus {
+persistent actor Consensus {
     // Types
     public type Challenge = {
         challenger: Principal;
@@ -53,9 +54,9 @@ actor Consensus {
     };
     
     // State
-    private var servers = HashMap.HashMap<Principal, ServerRecord>(50, Principal.equal, Principal.hash);
-    private var challenges = Buffer.Buffer<Challenge>(100);
-    private var votes = HashMap.HashMap<Nat, [Vote]>(100, Nat.equal, func(n: Nat) : Nat32 = Nat32.fromNat(n % 2147483647));
+    private var servers = Map.empty<Principal, ServerRecord>();
+    private var challenges = List.empty<Challenge>();
+    private var votes = Map.empty<Nat, List.List<Vote>>();
     private var rewardPool: Nat = 0;
     private var totalActiveStake: Nat = 0;
     
@@ -73,7 +74,7 @@ actor Consensus {
             challengesLost = 0;
         };
         
-        servers.put(msg.caller, serverRecord);
+        ignore Map.insert(servers, Principal.compare, msg.caller, serverRecord);
         totalActiveStake += stake;
         
         if (eligibleForRewards) {
@@ -91,7 +92,7 @@ actor Consensus {
         challengedChildVersion: Text
     ) : async Result.Result<Nat, Text> {
         // Verify challenger is an active server
-        switch (servers.get(msg.caller)) {
+        switch (Map.get(servers, Principal.compare, msg.caller)) {
             case null { return #err("Challenger is not a registered server") };
             case (?server) {
                 switch (server.status) {
@@ -102,7 +103,7 @@ actor Consensus {
         };
         
         // Verify challenged is a server
-        switch (servers.get(challenged)) {
+        switch (Map.get(servers, Principal.compare, challenged)) {
             case null { return #err("Challenged is not a registered server") };
             case (?_) { /* OK */ };
         };
@@ -117,8 +118,8 @@ actor Consensus {
             resolved = false;
         };
         
-        challenges.add(challenge);
-        let challengeId = challenges.size() - 1;
+        List.add(challenges, challenge);
+        let challengeId = List.size(challenges) - 1;
         
         #ok(challengeId)
     };
@@ -129,7 +130,7 @@ actor Consensus {
         supportChallenge: Bool
     ) : async Result.Result<Text, Text> {
         // Verify voter is an active server
-        let voterStake = switch (servers.get(msg.caller)) {
+        let voterStake = switch (Map.get(servers, Principal.compare, msg.caller)) {
             case null { return #err("Voter is not a registered server") };
             case (?server) {
                 switch (server.status) {
@@ -140,11 +141,13 @@ actor Consensus {
         };
         
         // Verify challenge exists and is not resolved
-        if (challengeId >= challenges.size()) {
+        if (challengeId >= List.size(challenges)) {
             return #err("Invalid challenge ID");
         };
         
-        let challenge = challenges.get(challengeId);
+        let ?challenge = List.get(challenges, challengeId) else {
+            throw Error.reject("programmer error: challenge not found");
+        };
         if (challenge.resolved) {
             return #err("Challenge already resolved");
         };
@@ -156,29 +159,35 @@ actor Consensus {
             stake = voterStake;
         };
         
-        let currentVotes = switch (votes.get(challengeId)) {
-            case null { [] };
-            case (?v) { v };
+        let l = Map.get(votes, Nat.compare, challengeId);
+        switch (l) {
+            case null {
+                ignore Map.insert<Nat, List.List<Vote>>(votes, Nat.compare, challengeId, List.singleton(vote));
+            };
+            case (?l) {
+                List.add(l, vote);
+            };
         };
-        
-        votes.put(challengeId, Array.append(currentVotes, [vote]));
         
         #ok("Vote recorded")
     };
     
     // Resolve a challenge based on votes
     public shared func resolveChallenge(challengeId: Nat) : async Result.Result<Text, Text> {
-        if (challengeId >= challenges.size()) {
+        if (challengeId >= List.size(challenges)) {
             return #err("Invalid challenge ID");
         };
         
-        var challenge = challenges.get(challengeId);
+        let ?challenge0 = List.get(challenges, challengeId) else {
+            throw Error.reject("programmer error: challenge not found");
+        };
+        var challenge = challenge0;
         if (challenge.resolved) {
             return #err("Challenge already resolved");
         };
         
         // Count votes weighted by stake
-        let challengeVotes = switch (votes.get(challengeId)) {
+        let challengeVotes = switch (Map.get(votes, Nat.compare, challengeId)) {
             case null { return #err("No votes for this challenge") };
             case (?v) { v };
         };
@@ -186,7 +195,7 @@ actor Consensus {
         var supportStake: Nat = 0;
         var oppositionStake: Nat = 0;
         
-        for (vote in challengeVotes.vals()) {
+        for (vote in List.values(challengeVotes)) {
             if (vote.supportChallenge) {
                 supportStake += vote.stake;
             } else {
@@ -225,14 +234,14 @@ actor Consensus {
             resolved = true;
         };
         
-        challenges.put(challengeId, challenge);
+        List.add(challenges, challenge);
         
         #ok(if (challengeSucceeds) "Challenge succeeded" else "Challenge failed")
     };
     
     // Helper functions
     private func disqualifyServer(server: Principal) {
-        switch (servers.get(server)) {
+        switch (Map.get(servers, Principal.compare, server)) {
             case null { };
             case (?record) {
                 let updated: ServerRecord = {
@@ -243,7 +252,7 @@ actor Consensus {
                     challengesWon = record.challengesWon;
                     challengesLost = record.challengesLost;
                 };
-                servers.put(server, updated);
+                ignore Map.insert(servers, Principal.compare, server, updated);
                 
                 // Update total active stake
                 totalActiveStake -= record.stake;
@@ -257,7 +266,7 @@ actor Consensus {
     };
     
     private func updateServerStats(server: Principal, won: Bool) {
-        switch (servers.get(server)) {
+        switch (Map.get(servers, Principal.compare, server)) {
             case null { };
             case (?record) {
                 let updated: ServerRecord = {
@@ -268,14 +277,14 @@ actor Consensus {
                     challengesWon = if (won) record.challengesWon + 1 else record.challengesWon;
                     challengesLost = if (not won) record.challengesLost + 1 else record.challengesLost;
                 };
-                servers.put(server, updated);
+                ignore Map.insert(servers, Principal.compare, server, updated);
             };
         };
     };
     
     private func getActiveServerCount() : Nat {
         var count = 0;
-        for ((_, server) in servers.entries()) {
+        for ((_, server) in Map.entries(servers)) {
             switch (server.status) {
                 case (#Active) { count += 1 };
                 case (_) { };
@@ -295,9 +304,9 @@ actor Consensus {
         dependencyType: DependencyType
     ) : async Result.Result<Text, Text> {
         // Get all active servers' votes for this project version
-        var versionVotes = HashMap.HashMap<Text, Nat>(10, Text.equal, Text.hash);
+        var versionVotes = Map.empty<Text, Nat>();
         
-        for ((serverAddr, server) in servers.entries()) {
+        for ((serverAddr, server) in Map.entries(servers)) {
             switch (server.status) {
                 case (#Active) {
                     // In real implementation, query each server for their version
@@ -311,7 +320,7 @@ actor Consensus {
         var maxStake: Nat = 0;
         var consensusVersion: Text = "";
         
-        for ((version, stake) in versionVotes.entries()) {
+        for ((version, stake) in Map.entries(versionVotes)) {
             if (stake > maxStake) {
                 maxStake := stake;
                 consensusVersion := version;
@@ -327,26 +336,26 @@ actor Consensus {
     
     // Query functions
     public query func getServerInfo(server: Principal) : async ?ServerRecord {
-        servers.get(server)
+        Map.get(servers, Principal.compare, server)
     };
     
     public query func getChallenge(challengeId: Nat) : async ?Challenge {
-        if (challengeId < challenges.size()) {
-            ?challenges.get(challengeId)
+        if (challengeId < List.size(challenges)) {
+            List.get(challenges, challengeId)
         } else {
             null
         }
     };
     
     public query func getActiveServers() : async [Principal] {
-        let activeServers = Buffer.Buffer<Principal>(servers.size());
-        for ((addr, server) in servers.entries()) {
+        let activeServers = List.empty<Principal>();
+        for ((addr, server) in Map.entries(servers)) {
             switch (server.status) {
-                case (#Active) { activeServers.add(addr) };
+                case (#Active) { List.add(activeServers, addr) };
                 case (_) { };
             };
         };
-        Buffer.toArray(activeServers)
+        List.toArray(activeServers)
     };
     
     public query func getTotalActiveStake() : async Nat {

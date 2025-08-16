@@ -1,17 +1,17 @@
-import Principal "mo:base/Principal";
-import HashMap "mo:base/HashMap";
-import Text "mo:base/Text";
-import Nat "mo:base/Nat";
-import Int "mo:base/Int";
-import Float "mo:base/Float";
-import Time "mo:base/Time";
-import Array "mo:base/Array";
-import Buffer "mo:base/Buffer";
-import Result "mo:base/Result";
-import Iter "mo:base/Iter";
-import Order "mo:base/Order";
-import Nat64 "mo:base/Nat64";
-import Blob "mo:base/Blob";
+import Principal "mo:core/Principal";
+import Map "mo:core/Map";
+import Text "mo:core/Text";
+import Nat "mo:core/Nat";
+import Int "mo:core/Int";
+import Float "mo:core/Float";
+import Time "mo:core/Time";
+import Array "mo:core/Array";
+import List "mo:core/List";
+import Result "mo:core/Result";
+import Iter "mo:core/Iter";
+import Order "mo:core/Order";
+import Nat64 "mo:core/Nat64";
+import Blob "mo:core/Blob";
 
 
 persistent actor GrantsSystem {
@@ -118,13 +118,14 @@ persistent actor GrantsSystem {
     
     // State
     private stable var currentRound: ?RoundConfig = null;
-    private transient var donations = HashMap.HashMap<Text, [DonationSpec]>(100, Text.equal, Text.hash);
-    private transient var matchingPool = HashMap.HashMap<TokenType, Nat>(10, func(a, b) = a == b, func(t) = 0);
-    private transient var servers = HashMap.HashMap<Principal, ServerInfo>(50, Principal.equal, Principal.hash);
-    private transient var projectStats = HashMap.HashMap<Text, ProjectStats>(100, Text.equal, Text.hash);
-    private transient var projects = HashMap.HashMap<Text, Project>(100, Text.equal, Text.hash);
-    private transient var passportScores = HashMap.HashMap<Text, [GitCoinPassport]>(1000, Text.equal, Text.hash);
-    private transient var withdrawals = HashMap.HashMap<Text, [(TokenType, Nat)]>(100, Text.equal, Text.hash);
+    // FIXME: Why `transient`?
+    private transient var donations = Map.empty<Text, [DonationSpec]>();
+    private transient var matchingPool = Map.empty<TokenType, Nat>();
+    private transient var servers = Map.empty<Principal, ServerInfo>();
+    private transient var projectStats = Map.empty<Text, ProjectStats>();
+    private transient var projects = Map.empty<Text, Project>();
+    private transient var passportScores = Map.empty<Text, [GitCoinPassport]>();
+    private transient var withdrawals = Map.empty<Text, [(TokenType, Nat)]>();
     
     // Wallet canister actor
     private transient let walletCanisterId = "wallet-canister-id"; // This will be set during deployment
@@ -159,7 +160,7 @@ persistent actor GrantsSystem {
                     return #err("Cannot contribute to matching pool after round starts");
                 };
                 
-                let current = switch (matchingPool.get(token)) {
+                let current = switch (Map.get(matchingPool, TokenType.compare, token)) {
                     case null { 0 };
                     case (?amt) { amt };
                 };
@@ -304,7 +305,7 @@ persistent actor GrantsSystem {
                 };
                 
                 // Group donations by donor and calculate square roots
-                let donorTotals = HashMap.HashMap<Principal, Float>(100, Principal.equal, Principal.hash);
+                let donorTotals = Map.Map<Principal, Float>(100, Principal.equal, Principal.hash);
                 
                 for (donation in projectDonations.vals()) {
                     let donor = Principal.fromText(donation.projectId); // This should be donor address
@@ -640,11 +641,11 @@ persistent actor GrantsSystem {
     
     // Get all projects
     public query func getProjects() : async [Project] {
-        let projectArray = Buffer.Buffer<Project>(0);
+        let projectArray = List.List<Project>(0);
         for ((_, project) in projects.entries()) {
             projectArray.add(project);
         };
-        Buffer.toArray(projectArray)
+        List.toArray(projectArray)
     };
     
     // Get a specific project

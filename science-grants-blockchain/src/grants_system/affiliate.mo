@@ -1,12 +1,12 @@
-import Principal "mo:base/Principal";
-import HashMap "mo:base/HashMap";
-import Text "mo:base/Text";
-import Nat "mo:base/Nat";
-import Float "mo:base/Float";
-import Array "mo:base/Array";
-import Buffer "mo:base/Buffer";
-import Time "mo:base/Time";
-import Result "mo:base/Result";
+import Principal "mo:core/Principal";
+import Map "mo:core/Map";
+import Text "mo:core/Text";
+import Nat "mo:core/Nat";
+import Float "mo:core/Float";
+import Array "mo:core/Array";
+import List "mo:core/List";
+import Time "mo:core/Time";
+import Result "mo:core/Result";
 
 module {
     // Types
@@ -47,7 +47,7 @@ module {
     } {
         var remainingAmount = donationAmount;
         var currentAffiliateReward: Nat = 0;
-        let previousRewards = Buffer.Buffer<(Principal, Nat)>(previousAffiliates.size());
+        let previousRewards = List.empty<(Principal, Nat)>();
         
         // Calculate Y% for current affiliate if exists
         switch (currentAffiliate) {
@@ -76,7 +76,7 @@ module {
                 if (totalPreviousContributions > 0) {
                     for ((affiliate, contribution) in previousAffiliates.vals()) {
                         let affiliateShare = (previousAffiliateTotal * contribution) / totalPreviousContributions;
-                        previousRewards.add((affiliate, affiliateShare));
+                        List.add(previousRewards, (affiliate, affiliateShare));
                     };
                 };
             };
@@ -84,16 +84,17 @@ module {
         
         {
             currentAffiliateReward = currentAffiliateReward;
-            previousAffiliatesRewards = Buffer.toArray(previousRewards);
+            previousAffiliatesRewards = List.toArray(previousRewards);
             remainingAmount = remainingAmount;
         }
     };
     
     // Track affiliate performance
     public class AffiliateTracker() {
-        private var affiliateRecords = HashMap.HashMap<Text, [AffiliateRecord]>(100, Text.equal, Text.hash);
-        private var affiliateRewards = HashMap.HashMap<Principal, [AffiliateReward]>(100, Principal.equal, Principal.hash);
-        private var projectAffiliateData = HashMap.HashMap<Text, ProjectAffiliateData>(100, Text.equal, Text.hash);
+        // TODO: Use `List.List`:
+        private var affiliateRecords = Map.empty<Text, [AffiliateRecord]>();
+        private var affiliateRewards = Map.empty<Principal, [AffiliateReward]>();
+        private var projectAffiliateData = Map.empty<Text, ProjectAffiliateData>();
         
         public func recordAffiliateDonation(
             projectId: Text,
@@ -109,7 +110,7 @@ module {
                 isActive = true;
             };
             
-            let projectRecords = switch (affiliateRecords.get(projectId)) {
+            let projectRecords = switch (Map.get(affiliateRecords, Text.compare, projectId)) {
                 case null { [] };
                 case (?existing) { existing };
             };
@@ -132,10 +133,10 @@ module {
                 }
             );
             
-            if (not found) {
-                affiliateRecords.put(projectId, Array.append(updatedRecords, [record]));
+            if (not found) { // TODO: Check this code.
+                ignore Map.insert(affiliateRecords, Text.compare, projectId, Array.concat(updatedRecords, [record]));
             } else {
-                affiliateRecords.put(projectId, updatedRecords);
+                ignore Map.insert(affiliateRecords, Text.compare, projectId, updatedRecords);
             };
             
             // Update project affiliate data
@@ -156,12 +157,12 @@ module {
                 donationId = donationId;
             };
             
-            let rewards = switch (affiliateRewards.get(affiliate)) {
+            let rewards = switch (Map.get(affiliateRewards, Principal.compare, affiliate)) {
                 case null { [] };
                 case (?existing) { existing };
             };
             
-            affiliateRewards.put(affiliate, Array.append(rewards, [reward]));
+            ignore Map.insert(affiliateRewards, Principal.compare, affiliate, Array.concat(rewards, [reward]));
         };
         
         public func getAffiliateStats(affiliate: Principal) : {
@@ -174,7 +175,7 @@ module {
             var totalDonationsBrought: Nat = 0;
             
             // Calculate total earned
-            switch (affiliateRewards.get(affiliate)) {
+            switch (Map.get(affiliateRewards, Principal.compare, affiliate)) {
                 case null { };
                 case (?rewards) {
                     for (reward in rewards.vals()) {
@@ -184,7 +185,7 @@ module {
             };
             
             // Calculate projects promoted and donations brought
-            for ((projectId, records) in affiliateRecords.entries()) {
+            for ((projectId, records) in Map.entries(affiliateRecords)) {
                 for (record in records.vals()) {
                     if (record.affiliate == affiliate) {
                         projectsPromoted += 1;
@@ -201,7 +202,7 @@ module {
         };
         
         public func getProjectAffiliates(projectId: Text) : [(Principal, Nat)] {
-            switch (affiliateRecords.get(projectId)) {
+            switch (Map.get(affiliateRecords, Text.compare, projectId)) {
                 case null { [] };
                 case (?records) {
                     Array.map<AffiliateRecord, (Principal, Nat)>(
@@ -220,7 +221,7 @@ module {
             affiliate: Principal,
             donationAmount: Nat
         ) {
-            let data = switch (projectAffiliateData.get(projectId)) {
+            let data = switch (Map.get(projectAffiliateData, Text.compare, projectId)) {
                 case null {
                     {
                         projectId = projectId;
@@ -234,7 +235,7 @@ module {
                         existing.activeAffiliates,
                         func(a) = a == affiliate
                     ) == null) {
-                        Array.append(existing.activeAffiliates, [affiliate])
+                        Array.concat(existing.activeAffiliates, [affiliate])
                     } else {
                         existing.activeAffiliates
                     };
@@ -248,7 +249,7 @@ module {
                 };
             };
             
-            projectAffiliateData.put(projectId, data);
+            ignore Map.insert(projectAffiliateData, Text.compare, projectId, data);
         };
     };
 }

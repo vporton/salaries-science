@@ -1,14 +1,14 @@
-import Principal "mo:base/Principal";
-import HashMap "mo:base/HashMap";
-import Text "mo:base/Text";
-import Iter "mo:base/Iter";
-import Array "mo:base/Array";
-import Result "mo:base/Result";
-import Time "mo:base/Time";
-import Buffer "mo:base/Buffer";
-import Option "mo:base/Option";
+import Principal "mo:core/Principal";
+import Map "mo:core/Map";
+import Text "mo:core/Text";
+import Iter "mo:core/Iter";
+import Array "mo:core/Array";
+import Result "mo:core/Result";
+import Time "mo:core/Time";
+import List "mo:core/List";
+import Option "mo:core/Option";
 
-actor DependencyGraph {
+persistent actor DependencyGraph {
     // Types
     public type ServerAddress = Principal;
     public type Version = Text; // Git commit hash or version tag
@@ -38,9 +38,9 @@ actor DependencyGraph {
     };
     
     // Storage
-    private var dependencyGraph = HashMap.HashMap<Version, Node>(100, Text.equal, Text.hash);
-    private var projectRegistry = HashMap.HashMap<ProjectID, ProjectInfo>(100, Text.equal, Text.hash);
-    private var serverTrust = HashMap.HashMap<ServerAddress, [ServerAddress]>(50, Principal.equal, Principal.hash);
+    private stable var dependencyGraph = Map.empty<Version, Node>();
+    private stable var projectRegistry = Map.empty<ProjectID, ProjectInfo>();
+    private stable var serverTrust = Map.empty<ServerAddress, List.List<ServerAddress>>();
     
     // Add a new node to the dependency graph
     public shared(msg) func addNode(
@@ -52,7 +52,7 @@ actor DependencyGraph {
         
         // Check if all parent dependencies exist and are finished
         for (dep in dependencies.vals()) {
-            switch (dependencyGraph.get(dep)) {
+            switch (Map.get(dependencyGraph, Text.compare, dep)) {
                 case null { return #err("Parent dependency " # dep # " not found") };
                 case (?node) {
                     switch (node.status) {
@@ -64,7 +64,7 @@ actor DependencyGraph {
         };
         
         // Check if node already exists
-        switch (dependencyGraph.get(version)) {
+        switch (Map.get(dependencyGraph, Text.compare, version)) {
             case (?existing) { return #err("Version already exists") };
             case null { /* OK to add */ };
         };
@@ -78,7 +78,7 @@ actor DependencyGraph {
             writtenBy = caller;
         };
         
-        dependencyGraph.put(version, node);
+        ignore Map.insert(dependencyGraph, Text.compare, version, node);
         #ok("Node added successfully")
     };
     
@@ -89,7 +89,7 @@ actor DependencyGraph {
     ) : async Result.Result<Text, Text> {
         let caller = msg.caller;
         
-        switch (dependencyGraph.get(version)) {
+        switch (Map.get(dependencyGraph, Text.compare, version)) {
             case null { return #err("Version not found") };
             case (?node) {
                 if (node.server != caller) {
@@ -105,7 +105,7 @@ actor DependencyGraph {
                     writtenBy = node.writtenBy;
                 };
                 
-                dependencyGraph.put(version, updatedNode);
+                ignore Map.insert(dependencyGraph, Text.compare, version, updatedNode);
                 #ok("Status updated successfully")
             };
         };
@@ -124,24 +124,24 @@ actor DependencyGraph {
             server = msg.caller;
         };
         
-        projectRegistry.put(projectId, projectInfo);
+        ignore Map.insert(projectRegistry, Text.compare, projectId, projectInfo);
         #ok("Project registered successfully")
     };
     
     // Get all dependencies for a version (recursive)
     public query func getAllDependencies(version: Version) : async [Version] {
-        let visited = HashMap.HashMap<Version, Bool>(100, Text.equal, Text.hash);
-        let result = Buffer.Buffer<Version>(50);
+        let visited = Map.empty<Version, Bool>();
+        let result = List.empty<Version>();
         
         func traverse(v: Version) {
-            switch (visited.get(v)) {
+            switch (Map.get(visited, Text.compare, v)) {
                 case (?true) { return };
                 case _ {
-                    visited.put(v, true);
-                    switch (dependencyGraph.get(v)) {
+                    ignore Map.insert(visited, Text.compare, v, true);
+                    switch (Map.get(dependencyGraph, Text.compare, v)) {
                         case null { };
                         case (?node) {
-                            result.add(v);
+                            List.add(result, v);
                             for (dep in node.dependencies.vals()) {
                                 traverse(dep);
                             };
@@ -152,31 +152,31 @@ actor DependencyGraph {
         };
         
         traverse(version);
-        Buffer.toArray(result)
+        List.toArray(result)
     };
     
     // Get node information
     public query func getNode(version: Version) : async ?Node {
-        dependencyGraph.get(version)
+        Map.get(dependencyGraph, Text.compare, version)
     };
     
     // Get project information
     public query func getProject(projectId: ProjectID) : async ?ProjectInfo {
-        projectRegistry.get(projectId)
+        Map.get(projectRegistry, Text.compare, projectId)
     };
     
     // Add trust relationship between servers
     public shared(msg) func addTrust(trustedServer: ServerAddress) : async Result.Result<Text, Text> {
         let caller = msg.caller;
         
-        switch (serverTrust.get(caller)) {
+        switch (Map.get(serverTrust, Principal.compare, caller)) {
             case null {
-                serverTrust.put(caller, [trustedServer]);
+                ignore Map.insert<ServerAddress, List.List<ServerAddress>>(
+                    serverTrust, Principal.compare, caller, List.singleton(trustedServer)
+                );
             };
             case (?trusted) {
-                let buffer = Buffer.fromArray<ServerAddress>(trusted);
-                buffer.add(trustedServer);
-                serverTrust.put(caller, Buffer.toArray(buffer));
+                List.add(trusted, trustedServer);
             };
         };
         
@@ -185,16 +185,16 @@ actor DependencyGraph {
     
     // Get trusted servers for a given server
     public query func getTrustedServers(server: ServerAddress) : async [ServerAddress] {
-        switch (serverTrust.get(server)) {
+        switch (Map.get(serverTrust, Principal.compare, server)) {
             case null { [] };
-            case (?trusted) { trusted };
+            case (?trusted) { List.toArray(trusted) };
         }
     };
     
     // Validate dependency tree integrity
     public query func validateDependencyTree(version: Version) : async Bool {
         func checkNode(v: Version) : Bool {
-            switch (dependencyGraph.get(v)) {
+            switch (Map.get(dependencyGraph, Text.compare, v)) {
                 case null { false };
                 case (?node) {
                     // Check all dependencies exist

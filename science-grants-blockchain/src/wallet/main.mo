@@ -1,16 +1,16 @@
-import Principal "mo:base/Principal";
-import HashMap "mo:base/HashMap";
-import Text "mo:base/Text";
-import Nat64 "mo:base/Nat64";
-import Nat8 "mo:base/Nat8";
-import Array "mo:base/Array";
-import Result "mo:base/Result";
-import Blob "mo:base/Blob";
+import Principal "mo:core/Principal";
+import Map "mo:core/Map";
+import Text "mo:core/Text";
+import Nat64 "mo:core/Nat64";
+import Nat8 "mo:core/Nat8";
+import Array "mo:core/Array";
+import Result "mo:core/Result";
+import Blob "mo:core/Blob";
 
 
 
 // Wallet canister
-actor Wallet {
+persistent actor Wallet {
     // Types
     public type SubAccount = Blob;
     public type AccountIdentifier = Blob;
@@ -54,10 +54,10 @@ actor Wallet {
     };
     
     // State
-    private transient var userWallets = HashMap.HashMap<Principal, WalletInfo>(100, Principal.equal, Principal.hash);
+    private transient var userWallets = Map.empty<Principal, WalletInfo>();
     
     // ICP Ledger canister ID (mainnet)
-    private let ICP_LEDGER_CANISTER_ID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
+    private transient let ICP_LEDGER_CANISTER_ID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
     
     // ICP Ledger interface types
     private type LedgerAccountIdentifier = Blob;
@@ -98,7 +98,7 @@ actor Wallet {
     };
     
     // ICP Ledger actor
-    private let icpLedger : Ledger = actor(ICP_LEDGER_CANISTER_ID);
+    private transient let icpLedger : Ledger = actor(ICP_LEDGER_CANISTER_ID);
     
     // Create or get user wallet
     public shared(msg) func createWallet() : async Result.Result<WalletInfo, Text> {
