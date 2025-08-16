@@ -2,7 +2,6 @@ import Principal "mo:core/Principal";
 import Map "mo:core/Map";
 import Text "mo:core/Text";
 import Nat "mo:core/Nat";
-import Float "mo:core/Float";
 import Array "mo:core/Array";
 import List "mo:core/List";
 import Time "mo:core/Time";
