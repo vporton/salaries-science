@@ -20,17 +20,12 @@ interface GrantsSystem {
   getProjects: () => Promise<any>
 }
 
-interface DependencyGraph {
-  getNode: (version: string) => Promise<any>
-  getProject: (projectId: string) => Promise<any>
-  getAllDependencies: (version: string) => Promise<string[]>
-}
+// Removed unused DependencyGraph interface
 
 // Create agent and actors
 let agent: HttpAgent | null = null
 let grantsActor: GrantsSystem | null = null
-let dependencyActor: DependencyGraph | null = null
-
+// Removed unused _dependencyActor variable
 
 
 export const initializeActors = async (identity?: any) => {
@@ -50,7 +45,7 @@ export const initializeActors = async (identity?: any) => {
   // Create mock actors for development
   if (import.meta.env.MODE !== 'production') {
     grantsActor = createMockGrantsActor()
-    dependencyActor = createMockDependencyActor()
+    // _dependencyActor = createMockDependencyActor() // This line is removed
   } else {
     // Create real actors (you'll need to replace these with actual canister IDs)
     // grantsActor = Actor.createActor(grantsIdl, {
@@ -67,11 +62,11 @@ export const initializeActors = async (identity?: any) => {
 
 // Mock actor for development
 const createMockGrantsActor = (): GrantsSystem => ({
-  donate: async (args: any) => {
+  donate: async (_args: any) => {
     await new Promise(resolve => setTimeout(resolve, 1000))
     return { success: true }
   },
-  getProjectStats: async (projectId: string) => {
+  getProjectStats: async (_projectId: string) => {
     return {
       totalDonations: 0,
       donorCount: 0,
@@ -119,17 +114,7 @@ const createMockGrantsActor = (): GrantsSystem => ({
   }
 })
 
-const createMockDependencyActor = (): DependencyGraph => ({
-  getNode: async (version: string) => {
-    return null
-  },
-  getProject: async (projectId: string) => {
-    return null
-  },
-  getAllDependencies: async (version: string) => {
-    return []
-  }
-})
+// Removed unused createMockDependencyActor function
 
 // API functions
 export const getProjects = async () => {

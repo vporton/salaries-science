@@ -1,4 +1,13 @@
 // Polyfills for DFINITY agent in browser environment
+declare global {
+  var global: typeof globalThis;
+  var process: { env: Record<string, string> };
+  interface Window {
+    global: typeof globalThis;
+    process: { env: Record<string, string> };
+  }
+}
+
 if (typeof global === 'undefined') {
   (window as any).global = window;
 }

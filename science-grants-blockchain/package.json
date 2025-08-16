@@ -38,6 +38,6 @@
     "vite": "5.0.10"
   },
   "devDependencies": {
-    "@types/node": "^24.1.0"
+    "@types/node": "^24.3.0"
   }
 }
