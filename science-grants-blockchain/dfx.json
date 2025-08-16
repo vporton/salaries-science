@@ -23,10 +23,14 @@
       "type": "motoko",
       "main": "src/consensus/main.mo"
     },
+    "wallet": {
+      "type": "motoko",
+      "main": "src/wallet/main.mo"
+    },
     "frontend": {
       "type": "assets",
       "source": ["dist/"],
-      "dependencies": ["grants_system", "dependency_graph", "consensus", "internet_identity"]
+      "dependencies": ["grants_system", "dependency_graph", "consensus", "wallet", "internet_identity"]
     }
   },
   "defaults": {

@@ -18,6 +18,10 @@ interface GrantsSystem {
   getRoundConfig: () => Promise<any>
   submitProject: (githubUrl: string) => Promise<any>
   getProjects: () => Promise<any>
+  createUserWallet: () => Promise<any>
+  getUserWallet: () => Promise<any>
+  getWalletBalance: () => Promise<any>
+  getWalletAccountId: () => Promise<any>
 }
 
 // Removed unused DependencyGraph interface
@@ -111,6 +115,23 @@ const createMockGrantsActor = (): GrantsSystem => ({
   },
   getProjects: async () => {
     return window.mockProjects || []
+  },
+  createUserWallet: async () => {
+    await new Promise(resolve => setTimeout(resolve, 500))
+    return { ok: { principal: 'mock-principal', balance: { e8s: 0 } } }
+  },
+  getUserWallet: async () => {
+    await new Promise(resolve => setTimeout(resolve, 300))
+    return { ok: { principal: 'mock-principal', balance: { e8s: 0 } } }
+  },
+  getWalletBalance: async () => {
+    await new Promise(resolve => setTimeout(resolve, 300))
+    // Mock balance - in real implementation this would come from the wallet canister
+    return { ok: { e8s: 100000000 } } // 1 ICP
+  },
+  getWalletAccountId: async () => {
+    await new Promise(resolve => setTimeout(resolve, 300))
+    return { ok: 'mock-account-id-1234567890abcdef' }
   }
 })
 
@@ -202,5 +223,62 @@ export const submitProject = async (githubUrl: string) => {
     return { success: true, projectId: result.ok }
   } else {
     throw new Error(result.err)
+  }
+}
+
+// Wallet functions
+export const createUserWallet = async () => {
+  if (!grantsActor) {
+    throw new Error('Grants actor not initialized')
+  }
+
+  const result = await grantsActor.createUserWallet()
+  
+  if ('ok' in result) {
+    return { success: true, wallet: result.ok }
+  } else {
+    return { success: false, error: result.err }
+  }
+}
+
+export const getUserWallet = async () => {
+  if (!grantsActor) {
+    throw new Error('Grants actor not initialized')
+  }
+
+  const result = await grantsActor.getUserWallet()
+  
+  if ('ok' in result) {
+    return { success: true, wallet: result.ok }
+  } else {
+    return { success: false, error: result.err }
+  }
+}
+
+export const getWalletBalance = async () => {
+  if (!grantsActor) {
+    throw new Error('Grants actor not initialized')
+  }
+
+  const result = await grantsActor.getWalletBalance()
+  
+  if ('ok' in result) {
+    return { success: true, balance: Number(result.ok.e8s) }
+  } else {
+    return { success: false, error: result.err }
+  }
+}
+
+export const getWalletAccountId = async () => {
+  if (!grantsActor) {
+    throw new Error('Grants actor not initialized')
+  }
+
+  const result = await grantsActor.getWalletAccountId()
+  
+  if ('ok' in result) {
+    return { success: true, accountId: result.ok }
+  } else {
+    return { success: false, error: result.err }
   }
 }

@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams, Link, useNavigate } from 'react-router-dom'
+
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
 import { ProjectList } from './components/ProjectList'
@@ -6,6 +7,7 @@ import { ProjectSubmission } from './components/ProjectSubmission'
 import { DonationForm } from './components/DonationForm'
 import { AffiliatePanel } from './components/AffiliatePanel'
 import { ServerDashboard } from './components/ServerDashboard'
+import { WalletPanel } from './components/WalletPanel'
 import { AuthProvider } from './contexts/AuthContext'
 
 // Home component
@@ -91,23 +93,36 @@ const Donate = ({ projectId }: { projectId?: string }) => {
   const navigate = useNavigate()
   
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-8">Make a Donation</h1>
-      {projectId ? (
-        <DonationForm 
-          projectId={projectId}
-          onSuccess={() => {
-            navigate('/projects')
-          }}
-        />
-      ) : (
-        <div className="text-center">
-          <p className="text-gray-600 mb-4">Please select a project first</p>
-          <Link to="/projects" className="btn-primary">
-            Browse Projects
-          </Link>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8">Make a Donation</h1>
+        
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Main donation form */}
+          <div className="lg:col-span-2">
+            {projectId ? (
+              <DonationForm 
+                projectId={projectId}
+                onSuccess={() => {
+                  navigate('/projects')
+                }}
+              />
+            ) : (
+              <div className="card text-center">
+                <p className="text-gray-600 mb-4">Please select a project first</p>
+                <Link to="/projects" className="btn-primary">
+                  Browse Projects
+                </Link>
+              </div>
+            )}
+          </div>
+          
+          {/* Wallet panel */}
+          <div className="lg:col-span-1">
+            <WalletPanel />
+          </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }

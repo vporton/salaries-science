@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { donate } from '../services/api'
+import { donate, getWalletBalance } from '../services/api'
 
 interface DonationFormProps {
   projectId: string
@@ -15,6 +15,30 @@ export const DonationForm: React.FC<DonationFormProps> = ({ projectId, onSuccess
   const [affiliateAddress, setAffiliateAddress] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [walletBalance, setWalletBalance] = useState<number>(0)
+  const [balanceLoading, setBalanceLoading] = useState(false)
+
+  const loadWalletBalance = async () => {
+    if (!isAuthenticated) return
+    
+    try {
+      setBalanceLoading(true)
+      const result = await getWalletBalance()
+      if (result.success && result.balance !== undefined) {
+        setWalletBalance(result.balance)
+      }
+    } catch (err) {
+      console.error('Failed to load wallet balance:', err)
+    } finally {
+      setBalanceLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadWalletBalance()
+    }
+  }, [isAuthenticated])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,6 +53,14 @@ export const DonationForm: React.FC<DonationFormProps> = ({ projectId, onSuccess
       return
     }
 
+    const donationAmount = parseFloat(amount)
+    const donationAmountE8s = donationAmount * 100000000 // Convert to e8s
+
+    if (donationAmountE8s > walletBalance) {
+      setError('Insufficient wallet balance. Please fund your wallet first.')
+      return
+    }
+
     try {
       setLoading(true)
       setError('')
@@ -36,12 +68,14 @@ export const DonationForm: React.FC<DonationFormProps> = ({ projectId, onSuccess
       // In real implementation, this would call the canister
       await donate({
         projectId,
-        amount: parseFloat(amount),
+        amount: donationAmount,
         dependencyPercentage,
         affiliatePercentage,
         affiliateAddress: affiliateAddress || undefined,
       })
 
+      // Refresh wallet balance after donation
+      await loadWalletBalance()
       onSuccess()
     } catch (err) {
       setError('Failed to process donation. Please try again.')
@@ -74,16 +108,29 @@ export const DonationForm: React.FC<DonationFormProps> = ({ projectId, onSuccess
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Donation Amount (ICP)
         </label>
-        <input
-          type="number"
-          step="0.01"
-          min="0"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="input-field"
-          placeholder="Enter amount..."
-          required
-        />
+        <div className="relative">
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="input-field"
+            placeholder="Enter amount..."
+            required
+          />
+          {isAuthenticated && (
+            <div className="mt-2 text-sm text-gray-600">
+              {balanceLoading ? (
+                <span>Loading wallet balance...</span>
+              ) : (
+                <span>
+                  Wallet Balance: {(walletBalance / 100000000).toFixed(8)} ICP
+                </span>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div>

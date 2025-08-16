@@ -10,9 +10,28 @@ import Buffer "mo:base/Buffer";
 import Result "mo:base/Result";
 import Iter "mo:base/Iter";
 import Order "mo:base/Order";
+import Nat64 "mo:base/Nat64";
+import Blob "mo:base/Blob";
 
 
-actor GrantsSystem {
+persistent actor GrantsSystem {
+    // Wallet interface types
+    public type WalletSubAccount = Blob;
+    public type WalletAccountIdentifier = Blob;
+    public type WalletTokens = {
+        e8s : Nat64;
+    };
+    public type WalletInfo = {
+        principal : Principal;
+        subaccount : WalletSubAccount;
+        balance : WalletTokens;
+        accountId : WalletAccountIdentifier;
+    };
+    public type WalletTransferRequest = {
+        to : WalletAccountIdentifier;
+        amount : WalletTokens;
+        memo : ?Nat64;
+    };
     // Types
     public type TokenType = {
         #ICP;
@@ -99,13 +118,23 @@ actor GrantsSystem {
     
     // State
     private stable var currentRound: ?RoundConfig = null;
-    private var donations = HashMap.HashMap<Text, [DonationSpec]>(100, Text.equal, Text.hash);
-    private var matchingPool = HashMap.HashMap<TokenType, Nat>(10, func(a, b) = a == b, func(t) = 0);
-    private var servers = HashMap.HashMap<Principal, ServerInfo>(50, Principal.equal, Principal.hash);
-    private var projectStats = HashMap.HashMap<Text, ProjectStats>(100, Text.equal, Text.hash);
-    private var projects = HashMap.HashMap<Text, Project>(100, Text.equal, Text.hash);
-    private var passportScores = HashMap.HashMap<Text, [GitCoinPassport]>(1000, Text.equal, Text.hash);
-    private var withdrawals = HashMap.HashMap<Text, [(TokenType, Nat)]>(100, Text.equal, Text.hash);
+    private transient var donations = HashMap.HashMap<Text, [DonationSpec]>(100, Text.equal, Text.hash);
+    private transient var matchingPool = HashMap.HashMap<TokenType, Nat>(10, func(a, b) = a == b, func(t) = 0);
+    private transient var servers = HashMap.HashMap<Principal, ServerInfo>(50, Principal.equal, Principal.hash);
+    private transient var projectStats = HashMap.HashMap<Text, ProjectStats>(100, Text.equal, Text.hash);
+    private transient var projects = HashMap.HashMap<Text, Project>(100, Text.equal, Text.hash);
+    private transient var passportScores = HashMap.HashMap<Text, [GitCoinPassport]>(1000, Text.equal, Text.hash);
+    private transient var withdrawals = HashMap.HashMap<Text, [(TokenType, Nat)]>(100, Text.equal, Text.hash);
+    
+    // Wallet canister actor
+    private transient let walletCanisterId = "wallet-canister-id"; // This will be set during deployment
+    private transient let wallet : actor {
+        createWallet : () -> async Result.Result<WalletInfo, Text>;
+        getWallet : () -> async Result.Result<WalletInfo, Text>;
+        getBalance : () -> async Result.Result<WalletTokens, Text>;
+        transfer : (WalletTransferRequest) -> async Result.Result<Nat64, Text>;
+        getAccountId : () -> async Result.Result<WalletAccountIdentifier, Text>;
+    } = actor(walletCanisterId);
     
     // Start a new funding round
     public shared(msg) func startRound(config: RoundConfig) : async Result.Result<Text, Text> {
@@ -174,7 +203,7 @@ actor GrantsSystem {
         }
     };
     
-    // Make a donation
+    // Make a donation using wallet
     public shared(msg) func donate(spec: DonationSpec) : async Result.Result<Text, Text> {
         switch (currentRound) {
             case null { #err("No active round") };
@@ -186,6 +215,45 @@ actor GrantsSystem {
                 
                 if (spec.amount < round.minDonationAmount) {
                     return #err("Donation below minimum amount");
+                };
+                
+                // Ensure user has a wallet
+                let walletResult = await wallet.getWallet();
+                switch (walletResult) {
+                    case (#err(_)) {
+                        // Create wallet if it doesn't exist
+                        let createResult = await wallet.createWallet();
+                        switch (createResult) {
+                            case (#err(e)) { return #err("Failed to create wallet: " # e) };
+                            case (#ok(_)) { };
+                        };
+                    };
+                    case (#ok(_)) { };
+                };
+                
+                // Check wallet balance
+                let balanceResult = await wallet.getBalance();
+                switch (balanceResult) {
+                    case (#err(e)) { return #err("Failed to get wallet balance: " # e) };
+                    case (#ok(balance)) {
+                        if (balance.e8s < Nat64.fromNat(spec.amount)) {
+                            return #err("Insufficient wallet balance");
+                        };
+                    };
+                };
+                
+                // Transfer funds from wallet to grants system (simplified for now)
+                // In a real implementation, this would transfer to the grants system's account
+                let transferRequest : WalletTransferRequest = {
+                    to = Blob.fromArray(Array.freeze(Array.init<Nat8>(32, 0))); // Grants system account
+                    amount = { e8s = Nat64.fromNat(spec.amount) };
+                    memo = ?Nat64.fromNat(Int.abs(Time.now()));
+                };
+                
+                let transferResult = await wallet.transfer(transferRequest);
+                switch (transferResult) {
+                    case (#err(e)) { return #err("Transfer failed: " # e) };
+                    case (#ok(_)) { };
                 };
                 
                 // Record donation
@@ -582,5 +650,22 @@ actor GrantsSystem {
     // Get a specific project
     public query func getProject(projectId: Text) : async ?Project {
         projects.get(projectId)
+    };
+    
+    // Wallet-related functions
+    public shared(msg) func createUserWallet() : async Result.Result<WalletInfo, Text> {
+        await wallet.createWallet()
+    };
+    
+    public shared(msg) func getUserWallet() : async Result.Result<WalletInfo, Text> {
+        await wallet.getWallet()
+    };
+    
+    public shared(msg) func getWalletBalance() : async Result.Result<WalletTokens, Text> {
+        await wallet.getBalance()
+    };
+    
+    public shared(msg) func getWalletAccountId() : async Result.Result<WalletAccountIdentifier, Text> {
+        await wallet.getAccountId()
     };
 }
